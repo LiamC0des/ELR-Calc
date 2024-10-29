@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ECLR Calculator</title>
+    <style>
+        /* Reset default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; /* Allow content to stack vertically */
+            align-items: center;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+
+        .container h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            flex: 1;
+            margin-right: 10px;
+            color: #555555;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: #6666ff;
+            outline: none;
+        }
+
+        #calculateButton {
+            width: 100%;
+            padding: 12px;
+            background-color: #6666ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        #calculateButton:hover {
+            background-color: #5555ee;
+        }
+
+        #elrOutput {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #333333;
+            min-height: 1.5em;
+        }
+
+        /* Styles for the content section */
+        .content {
+            max-width: 800px;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .content h1, .content h2, .content h3 {
+            margin-top: 20px;
+            color: #333333;
+        }
+
+        .content p {
+            margin-top: 15px;
+            line-height: 1.6;
+            color: #555555;
+            font-size: 1rem;
+        }
+
+        a {
+            color: #6666ff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            .form-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .form-group label {
+                margin-bottom: 5px;
+            }
+
+            .form-group input {
+                width: 100%;
+            }
+
+            .content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Expected Card Loss Due To Robber Calculator</h3>
+        <div class="form-group">
+            <label for="numCardsOriginal">Initial # of Cards</label>
+            <input type="number" id="numCardsOriginal" value="10" min="0">
+        </div>
+        <div class="form-group">
+            <label for="rg1">Dots Yielding 1 Resource</label>
+            <input type="number" id="rg1" value="10" min="0">
+        </div>
+        <div class="form-group">
+            <label for="rg2">Dots Yielding 2 Resources</label>
+            <input type="number" id="rg2" value="5" min="0">
+        </div>
+        <div class="form-group">
+            <label for="rg3">Dots Yielding 3 Resources</label>
+            <input type="number" id="rg3" value="0" min="0">
+        </div>
+        <div class="form-group">
+            <label for="rg4">Dots Yielding 4 Resources</label>
+            <input type="number" id="rg4" value="0" min="0">
+        </div>
+        <div class="form-group">
+            <label for="rg5">Dots Yielding 5 Resources</label>
+            <input type="number" id="rg5" value="0" min="0">
+        </div>
+        <button id="calculateButton">Calculate Expected Card Loss Due To Robber </button>
+        <div id="elrOutput">Expected Card Loss Due to Robber: </div>
+    </div>
+
+    <!-- Added content starts here -->
+    <div class="content">
+        <h1>How the Calculator Works</h1>
+        <p>CatanRobberCalculator.com is aimed to help you beat your friends in Catan by helping you leverage the Robber in ways that might initially seem counterintuitive. So often do I find myself with 7 cards in hand and strong resource production capability debating if I should accept an otherwise unfair 2-for-1 trade to protect against the antagonizing robber. When faced with this predicament, I am forced to make a gut-call, losing out on potential alpha. That’s where CatanRobberCalculator.com comes in. By comparing your expected loss due to the Robber (ELR) between differing scenarios, you optimize your decision making. For example, if you notice that building a road lowers your ELR by 2 or more card(s), you should always build that road. The same applies to any trade where a player gives more cards than they receive in return, whether with other players, merchants, or the bank. Other times, it's comforting to know how many cards you can expect next turn.</p>
+
+        <h2>Tackling Robber Optimization</h2>
+
+        <h3>The Math</h3>
+        <p>I began by breaking down each cycle, the amount of time between a player going twice, into 4 discrete rolls. On each roll (regardless of if it’s yours), you have a calculable probability to earn resources. By taking a weighted average of the potential resource gains, I was able to gauge expected card count in one cycle into the future. Then, I calculated the expected card count discounting the robber by treating “7s” as any other number that doesn’t yield resources. Finally, I took the difference between these two numbers, illustrating the ELR.</p>
+
+        <h3>The Implementation</h3>
+        <p>My first attempt to carry this protocol was to utilize Google Sheets. I created two 1300+ row sheets where I manually noted every possibility of every roll. While it was by no means pretty, it worked. However, it was not compatible with HTML, the coding language used to make websites like this one. So, I started self-teaching. And after many hours of Khan Academy and YouTube, I figured out how to systemize my unwieldy behemoth of a sheet into a neat and efficient chunk of code.</p>
+
+        <h2>Who Am I?</h2>
+        <p>Hi, my name is Liam Brooks and I am a 17-year-old kid from Los Angeles, CA. Similar you, I like Catan. And I love being the first to 10 VPs. Over the summer, I decided to see how I can leverage game theory to optimize my Catan strategy. I started by doing research to see what’s already out there. Immediately, I was struck by how all the literature discounted one crucial element of Catan: The Robber. For this reason, I decided to explore this niche and develop a practical algorithm to solve this aspect of the game. If you’re curious about the behind-the-scenes work or anything else relating to this website, don’t hesitate to reach out to me. I’d be psyched to hear any criticism or queries. The best way to contact me is via email: <a href="mailto:iamliambrooks@gmail.com">iamliambrooks@gmail.com</a></p>
+
+        <p>Thank you for taking the time to read this and have a nice day!</p>
+    </div>
+    <!-- Added content ends here -->
+
+    <script>
+        document.getElementById('calculateButton').addEventListener('click', function() {
+            const numCardsOriginal = parseInt(document.getElementById('numCardsOriginal').value) || 0;
+            const rg1 = parseInt(document.getElementById('rg1').value) || 0;
+            const rg2 = parseInt(document.getElementById('rg2').value) || 0;
+            const rg3 = parseInt(document.getElementById('rg3').value) || 0;
+            const rg4 = parseInt(document.getElementById('rg4').value) || 0;
+            const rg5 = parseInt(document.getElementById('rg5').value) || 0;
+
+            // Validate inputs
+            if (numCardsOriginal < 0 || rg1 < 0 || rg2 < 0 || rg3 < 0 || rg4 < 0 || rg5 < 0) {
+                alert("All input values must be non-negative.");
+                return;
+            }
+
+            calculateECLR(numCardsOriginal, rg1, rg2, rg3, rg4, rg5);
+        });
+
+        function calculateECLR(numCardsOriginal, rg1, rg2, rg3, rg4, rg5) {
+            let totalNumCardsWithRobber = 0;
+            let totalNumCardsNoRobber = 0;
+            const iterations = 1000000;
+
+            // "With Robber" Simulation
+            for (let i = 1; i <= iterations; i++) {
+                let numCards = numCardsOriginal;
+
+                // Roll 1
+                let diceRoll1 = Math.floor(Math.random() * 36) + 1;
+
+                // Robber for roll 1
+                if (diceRoll1 <= 6 && numCards > 7) {
+                    numCards = Math.floor((numCards / 2.0) + 0.5);
+                }
+                // RG for roll 1
+                else if (diceRoll1 > 6 && diceRoll1 <= (6 + rg1)) {
+                    numCards += 1;
+                } else if (diceRoll1 > (6 + rg1) && diceRoll1 <= (6 + rg1 + rg2)) {
+                    numCards += 2;
+                } else if (diceRoll1 > (6 + rg1 + rg2) && diceRoll1 <= (6 + rg1 + rg2 + rg3)) {
+                    numCards += 3;
+                } else if (diceRoll1 > (6 + rg1 + rg2 + rg3) && diceRoll1 <= (6 + rg1 + rg2 + rg3 + rg4)) {
+                    numCards += 4;
+                } else if (diceRoll1 > (6 + rg1 + rg2 + rg3 + rg4) && diceRoll1 <= (6 + rg1 + rg2 + rg3 + rg4 + rg5)) {
+                    numCards += 5;
+                }
+
+                // Repeat the same logic for rolls 2, 3, and 4
+
+                // Roll 2
+                let diceRoll2 = Math.floor(Math.random() * 36) + 1;
+
+                if (diceRoll2 <= 6 && numCards > 7) {
+                    numCards = Math.floor((numCards / 2.0) + 0.5);
+                } else if (diceRoll2 > 6 && diceRoll2 <= (6 + rg1)) {
+                    numCards += 1;
+                } else if (diceRoll2 > (6 + rg1) && diceRoll2 <= (6 + rg1 + rg2)) {
+                    numCards += 2;
+                } else if (diceRoll2 > (6 + rg1 + rg2) && diceRoll2 <= (6 + rg1 + rg2 + rg3)) {
+                    numCards += 3;
+                } else if (diceRoll2 > (6 + rg1 + rg2 + rg3) && diceRoll2 <= (6 + rg1 + rg2 + rg3 + rg4)) {
+                    numCards += 4;
+                } else if (diceRoll2 > (6 + rg1 + rg2 + rg3 + rg4) && diceRoll2 <= (6 + rg1 + rg2 + rg3 + rg4 + rg5)) {
+                    numCards += 5;
+                }
+
+                // Roll 3
+                let diceRoll3 = Math.floor(Math.random() * 36) + 1;
+
+                if (diceRoll3 <= 6 && numCards > 7) {
+                    numCards = Math.floor((numCards / 2.0) + 0.5);
+                } else if (diceRoll3 > 6 && diceRoll3 <= (6 + rg1)) {
+                    numCards += 1;
+                } else if (diceRoll3 > (6 + rg1) && diceRoll3 <= (6 + rg1 + rg2)) {
+                    numCards += 2;
+                } else if (diceRoll3 > (6 + rg1 + rg2) && diceRoll3 <= (6 + rg1 + rg2 + rg3)) {
+                    numCards += 3;
+                } else if (diceRoll3 > (6 + rg1 + rg2 + rg3) && diceRoll3 <= (6 + rg1 + rg2 + rg3 + rg4)) {
+                    numCards += 4;
+                } else if (diceRoll3 > (6 + rg1 + rg2 + rg3 + rg4) && diceRoll3 <= (6 + rg1 + rg2 + rg3 + rg4 + rg5)) {
+                    numCards += 5;
+                }
+
+                // Roll 4
+                let diceRoll4 = Math.floor(Math.random() * 36) + 1;
+
+                if (diceRoll4 <= 6 && numCards > 7) {
+                    numCards = Math.floor((numCards / 2.0) + 0.5);
+                } else if (diceRoll4 > 6 && diceRoll4 <= (6 + rg1)) {
+                    numCards += 1;
+                } else if (diceRoll4 > (6 + rg1) && diceRoll4 <= (6 + rg1 + rg2)) {
+                    numCards += 2;
+                } else if (diceRoll4 > (6 + rg1 + rg2) && diceRoll4 <= (6 + rg1 + rg2 + rg3)) {
+                    numCards += 3;
+                } else if (diceRoll4 > (6 + rg1 + rg2 + rg3) && diceRoll4 <= (6 + rg1 + rg2 + rg3 + rg4)) {
+                    numCards += 4;
+                } else if (diceRoll4 > (6 + rg1 + rg2 + rg3 + rg4) && diceRoll4 <= (6 + rg1 + rg2 + rg3 + rg4 + rg5)) {
+                    numCards += 5;
+                }
+
+                totalNumCardsWithRobber += numCards;
+            }
+            let expectedNumCardsWithRobber = totalNumCardsWithRobber / iterations;
+            console.log("Expected Num Cards With Robber: " + expectedNumCardsWithRobber);
+
+            // "Without Robber" Simulation
+            for (let i = 1; i <= iterations; i++) {
+                let numCards = numCardsOriginal;
+
+                // Roll 1
+                let diceRoll1 = Math.floor(Math.random() * 36) + 1;
+
+                // RG for roll 1
+                if (diceRoll1 <= rg1) {
+                    numCards += 1;
+                } else if (diceRoll1 > rg1 && diceRoll1 <= (rg1 + rg2)) {
+                    numCards += 2;
+                } else if (diceRoll1 > (rg1 + rg2) && diceRoll1 <= (rg1 + rg2 + rg3)) {
+                    numCards += 3;
+                } else if (diceRoll1 > (rg1 + rg2 + rg3) && diceRoll1 <= (rg1 + rg2 + rg3 + rg4)) {
+                    numCards += 4;
+                } else if (diceRoll1 > (rg1 + rg2 + rg3 + rg4) && diceRoll1 <= (rg1 + rg2 + rg3 + rg4 + rg5)) {
+                    numCards += 5;
+                }
+
+                // Repeat the same logic for rolls 2, 3, and 4
+
+                // Roll 2
+                let diceRoll2 = Math.floor(Math.random() * 36) + 1;
+
+                if (diceRoll2 <= rg1) {
+                    numCards += 1;
+                } else if (diceRoll2 > rg1 && diceRoll2 <= (rg1 + rg2)) {
+                    numCards += 2;
+                } else if (diceRoll2 > (rg1 + rg2) && diceRoll2 <= (rg1 + rg2 + rg3)) {
+                    numCards += 3;
+                } else if (diceRoll2 > (rg1 + rg2 + rg3) && diceRoll2 <= (rg1 + rg2 + rg3 + rg4)) {
+                    numCards += 4;
+                } else if (diceRoll2 > (rg1 + rg2 + rg3 + rg4) && diceRoll2 <= (rg1 + rg2 + rg3 + rg4 + rg5)) {
+                    numCards += 5;
+                }
+
+                // Roll 3
+                let diceRoll3 = Math.floor(Math.random() * 36) + 1;
+
+                if (diceRoll3 <= rg1) {
+                    numCards += 1;
+                } else if (diceRoll3 > rg1 && diceRoll3 <= (rg1 + rg2)) {
+                    numCards += 2;
+                } else if (diceRoll3 > (rg1 + rg2) && diceRoll3 <= (rg1 + rg2 + rg3)) {
+                    numCards += 3;
+                } else if (diceRoll3 > (rg1 + rg2 + rg3) && diceRoll3 <= (rg1 + rg2 + rg3 + rg4)) {
+                    numCards += 4;
+                } else if (diceRoll3 > (rg1 + rg2 + rg3 + rg4) && diceRoll3 <= (rg1 + rg2 + rg3 + rg4 + rg5)) {
+                    numCards += 5;
+                }
+
+                // Roll 4
+                let diceRoll4 = Math.floor(Math.random() * 36) + 1;
+
+                if (diceRoll4 <= rg1) {
+                    numCards += 1;
+                } else if (diceRoll4 > rg1 && diceRoll4 <= (rg1 + rg2)) {
+                    numCards += 2;
+                } else if (diceRoll4 > (rg1 + rg2) && diceRoll4 <= (rg1 + rg2 + rg3)) {
+                    numCards += 3;
+                } else if (diceRoll4 > (rg1 + rg2 + rg3) && diceRoll4 <= (rg1 + rg2 + rg3 + rg4)) {
+                    numCards += 4;
+                } else if (diceRoll4 > (rg1 + rg2 + rg3 + rg4) && diceRoll4 <= (rg1 + rg2 + rg3 + rg4 + rg5)) {
+                    numCards += 5;
+                }
+
+                totalNumCardsNoRobber += numCards;
+            }
+            let expectedNumCardsNoRobber = totalNumCardsNoRobber / iterations;
+            console.log("Expected Num Cards Without Robber: " + expectedNumCardsNoRobber);
+
+            // Calculate ECLR
+            let ECLR = expectedNumCardsNoRobber - expectedNumCardsWithRobber;
+            ECLR = ECLR.toFixed(10);
+            console.log("ECLR is: " + ECLR);
+
+            // Display the ECLR result
+            document.getElementById('elrOutput').innerText = "ECLR: " + ECLR;
+        }
+    </script>
+</body>
+</html>
